@@ -81,7 +81,6 @@ const AddClient = () => {
       }
 
       // 3) Nigeria-specific structured attempt (helps for addresses like "house 2 salam street ilorin kwara state nigeria")
-      const lower = addr.toLowerCase();
       if (/(nigeria|ilorin|kwara)/i.test(addr)) {
         const cleaned = addr
           .replace(/\bstate\b/gi, '')

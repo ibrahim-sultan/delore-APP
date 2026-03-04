@@ -21,8 +21,6 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
