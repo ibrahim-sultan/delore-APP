@@ -21,10 +21,12 @@
     {
       "src": "/uploads/(.*)",
       "dest": "/api/index.js"
-    },
+    }
+  ],
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/client/build/index.html"
+      "source": "/((?!api|uploads).*)",
+      "destination": "/client/build/index.html"
     }
   ],
   "env": {
