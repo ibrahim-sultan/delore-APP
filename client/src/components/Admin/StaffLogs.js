@@ -33,8 +33,12 @@ const StaffLogs = () => {
   ];
 
   useEffect(() => {
-    fetchStaffMembers();
-    fetchLogs();
+    const initializeData = async () => {
+      await fetchStaffMembers();
+      await fetchLogs();
+    };
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchStaffMembers = async () => {

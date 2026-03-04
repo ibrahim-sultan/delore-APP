@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import './StaffReports.css';
-import { formatDate, formatDateTime } from '../../utils/datetime';
+import { formatDateTime } from '../../utils/datetime';
 
 const StaffReports = () => {
   const [reports, setReports] = useState([]);
