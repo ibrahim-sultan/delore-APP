@@ -1,0 +1,21 @@
+[build]
+  command = "cd client && npm run build"
+  publish = "client/build"
+  base = "client"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  REACT_APP_API_URL = "https://your-vercel-backend-url.vercel.app"
+
+[context.preview.environment]
+  REACT_APP_API_URL = "https://your-vercel-backend-url.vercel.app"
+
+[context.deploy-preview.environment]
+  REACT_APP_API_URL = "https://your-vercel-backend-url.vercel.app"
