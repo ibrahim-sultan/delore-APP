@@ -8,7 +8,7 @@ const AdminOverview = ({ data, onUpdate }) => {
     return <div className="loading">Loading overview...</div>;
   }
 
-  const { statistics, documentsByStaff, tasksByStaff, recentActivities, tasks } = data;
+  const { statistics, recentActivities, tasks } = data;
 
   // Calculate task statistics
   const tasksAssigned = tasks?.filter(t => t.status === 'assigned')?.length || 0;

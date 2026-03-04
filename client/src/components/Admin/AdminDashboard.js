@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../Layout/Sidebar';
 import AdminOverview from './AdminOverview';
-import EmergencyAdminOverview from './EmergencyAdminOverview';
 import StaffManagement from './StaffManagement';
 import DocumentManagement from './DocumentManagement';
 import TaskManagement from './TaskManagement';
@@ -69,21 +68,6 @@ const AdminDashboard = () => {
 
   const handleDataUpdate = () => {
     fetchDashboardData();
-  };
-
-  const getActiveTab = () => {
-    const path = location.pathname;
-    if (path.includes('/staff')) return 'staff';
-    if (path.includes('/documents')) return 'documents';
-    if (path.includes('/tasks')) return 'tasks';
-    if (path.includes('/payments')) return 'payments';
-    if (path.includes('/messages')) return 'messages';
-    if (path.includes('/clients')) return 'clients'; // Add this line
-    return 'overview';
-  };
-
-  const navigateToTab = (tab) => {
-    navigate(tab === 'overview' ? '/admin' : `/admin/${tab}`);
   };
 
   if (loading) {
