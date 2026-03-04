@@ -1,19 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm install && npm run build",
-  "outputDirectory": "client/build",
-  "installCommand": "npm install && cd client && npm install",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "client/build"
+      }
+    },
     {
       "src": "api/index.js",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 30
       }
-    },
-    {
-      "src": "client/build/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -26,7 +26,7 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/(.*)",
+      "src": "^/(?!api|uploads)(.*)$",
       "dest": "/client/build/index.html"
     }
   ],
