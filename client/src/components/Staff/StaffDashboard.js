@@ -61,16 +61,6 @@ const StaffDashboard = () => {
     return <LoadingSpinner message="Loading your dashboard..." />;
   }
 
-  if (error) {
-    return (
-      <div className="staff-page-container">
-        <div className="alert alert-error">
-          {error}
-        </div>
-      </div>
-    );
-  }
-
   if (showPasswordChange && userDetails?.isTemporaryPassword) {
     return (
       <div className="staff-page-container">
