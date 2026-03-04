@@ -226,11 +226,21 @@ router.get('/dashboard', adminAuth, async (req, res) => {
   }
 });
 
-// Ensure uploads directory exists
-const mapsUploadDir = path.join(__dirname, '..', 'uploads', 'maps');
-if (!fs.existsSync(mapsUploadDir)) {
-  fs.mkdirSync(mapsUploadDir, { recursive: true });
+const os = require('os');
+
+// Helper to select upload directory (prefer project uploads, fallback to tmp)
+function getUploadDir(subdir) {
+  const preferred = path.join(__dirname, '..', 'uploads', subdir);
+  try {
+    fs.mkdirSync(preferred, { recursive: true });
+    return preferred;
+  } catch (e) {
+    const fallback = path.join(os.tmpdir(), 'delore_uploads', subdir);
+    try { fs.mkdirSync(fallback, { recursive: true }); return fallback; } catch (err) { console.error('Failed to create upload dir:', err); return fallback; }
+  }
 }
+
+const mapsUploadDir = getUploadDir('maps');
 
 // Configure multer storage for map attachments
 const mapStorage = multer.diskStorage({

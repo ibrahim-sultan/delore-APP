@@ -6,17 +6,28 @@ const { body, validationResult } = require('express-validator');
 const Document = require('../models/Document');
 const DocumentTemplate = require('../models/DocumentTemplate');
 const { auth } = require('../middleware/auth');
+const os = require('os');
 
 const router = express.Router();
+
+// Helper to select upload directory (prefer project uploads, fallback to tmp)
+function getUploadDir(subdir) {
+  const preferred = path.join(__dirname, '..', 'uploads', subdir);
+  try {
+    fs.mkdirSync(preferred, { recursive: true });
+    return preferred;
+  } catch (e) {
+    const fallback = path.join(os.tmpdir(), 'delore_uploads', subdir);
+    try { fs.mkdirSync(fallback, { recursive: true }); return fallback; } catch (err) { console.error('Failed to create upload dir:', err); return fallback; }
+  }
+}
+
+const documentsUploadDir = getUploadDir('documents');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/documents');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
+    cb(null, documentsUploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -193,14 +204,14 @@ router.get('/:id/download', auth, async (req, res) => {
     // Resolve file path: prefer stored absolute path, else reconstruct from filename
     let resolvedPath = document.filePath;
     if (!resolvedPath || !fs.existsSync(resolvedPath)) {
-      const altPath = path.join(__dirname, '../uploads/documents', document.filename || '');
+      const altPath = path.join(documentsUploadDir, document.filename || '');
       if (fs.existsSync(altPath)) {
         resolvedPath = altPath;
       }
     }
 
     if (!resolvedPath || !fs.existsSync(resolvedPath)) {
-      console.log('File not found on filesystem (checked both paths):', document.filePath, 'alt:', path.join(__dirname, '../uploads/documents', document.filename || ''));
+      console.log('File not found on filesystem (checked both paths):', document.filePath, 'alt:', path.join(documentsUploadDir, document.filename || ''));
       return res.status(404).json({ message: 'File not found on server' });
     }
 
@@ -252,7 +263,7 @@ router.delete('/:id', auth, async (req, res) => {
         deletedFrom = document.filePath;
       } else {
         // Try alternate constructed path
-        const altPath = path.join(__dirname, '../uploads/documents', document.filename || '');
+        const altPath = path.join(documentsUploadDir, document.filename || '');
         if (fs.existsSync(altPath)) {
           console.log('Deleting file from alt path:', altPath);
           fs.unlinkSync(altPath);

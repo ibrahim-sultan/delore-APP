@@ -7,14 +7,29 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { sendMail } = require('../utils/mailer');
+const os = require('os');
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const tasksUploadDir = path.join(__dirname, '..', 'uploads', 'tasks');
-if (!fs.existsSync(tasksUploadDir)) {
-  fs.mkdirSync(tasksUploadDir, { recursive: true });
+// Helper: choose a writable uploads directory. Prefer project uploads, fallback to system temp for serverless.
+function getUploadDir(subdir) {
+  const preferred = path.join(__dirname, '..', 'uploads', subdir);
+  try {
+    fs.mkdirSync(preferred, { recursive: true });
+    return preferred;
+  } catch (e) {
+    const fallback = path.join(os.tmpdir(), 'delore_uploads', subdir);
+    try {
+      fs.mkdirSync(fallback, { recursive: true });
+      return fallback;
+    } catch (err) {
+      console.error('Failed to create upload dir in both preferred and tmp:', err);
+      return fallback;
+    }
+  }
 }
+
+const tasksUploadDir = getUploadDir('tasks');
 
 // Configure multer storage for task attachments
 const storage = multer.diskStorage({
