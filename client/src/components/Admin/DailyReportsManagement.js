@@ -8,14 +8,17 @@ const DailyReportsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedReport, setSelectedReport] = useState(null);
-  const [filter, setFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [staffFilter, setStaffFilter] = useState('');
   const [staffMembers, setStaffMembers] = useState([]);
 
   useEffect(() => {
-    fetchReports();
-    fetchStaffMembers();
+    const initializeData = async () => {
+      await fetchReports();
+      await fetchStaffMembers();
+    };
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchReports = async (customFilter = null) => {

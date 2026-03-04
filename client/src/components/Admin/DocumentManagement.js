@@ -41,7 +41,6 @@ const DocumentManagement = ({ documentsByStaff = [], onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedStaff, setSelectedStaff] = useState('all');
-  const [mounted, setMounted] = useState(false);
   
   // Refs to track component mount state and prevent memory leaks
   const isMounted = useRef(true);
@@ -49,13 +48,13 @@ const DocumentManagement = ({ documentsByStaff = [], onUpdate }) => {
   // Debug: log when component mounts/unmounts
   useEffect(() => {
     console.log('DocumentManagement component mounted');
-    setMounted(true);
     isMounted.current = true;
     
     return () => {
       console.log('DocumentManagement component unmounted');
       isMounted.current = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Memoize the fetch function to prevent unnecessary re-renders
