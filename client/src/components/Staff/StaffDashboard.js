@@ -18,7 +18,6 @@ import './StaffDashboard.css';
 const StaffDashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [userDetails, setUserDetails] = useState(null);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);

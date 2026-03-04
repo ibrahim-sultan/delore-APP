@@ -12,7 +12,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [pendingNavigation, setPendingNavigation] = useState(null);
 
-  const { login, isAuthenticated, user, isAdmin } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   // Handle navigation after authentication state is updated
