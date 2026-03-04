@@ -6,50 +6,21 @@ const { body, validationResult } = require('express-validator');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const { auth, adminAuth } = require('../middleware/auth');
-const os = require('os');
+const { uploadFile } = require('../utils/s3');
 
 const router = express.Router();
 
-// Helper to select upload directory (prefer project uploads, fallback to tmp)
-function getUploadDir(subdir) {
-  const preferred = path.join(__dirname, '..', 'uploads', subdir);
-  try {
-    fs.mkdirSync(preferred, { recursive: true });
-    return preferred;
-  } catch (e) {
-    const fallback = path.join(os.tmpdir(), 'delore_uploads', subdir);
-    try { fs.mkdirSync(fallback, { recursive: true }); return fallback; } catch (err) { console.error('Failed to create upload dir:', err); return fallback; }
-  }
-}
-
-const paymentsUploadDir = getUploadDir('payments');
-
-// Configure multer for payment receipt uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, paymentsUploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'payment-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Use memory storage and upload receipts to S3
+const storage = multer.memoryStorage();
 const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|pdf/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only images and PDFs are allowed for payment receipts'));
-    }
+    if (mimetype && extname) return cb(null, true);
+    cb(new Error('Only images and PDFs are allowed for payment receipts'));
   }
 });
 
@@ -78,13 +49,16 @@ router.post('/upload', adminAuth, upload.single('receipt'), [
       return res.status(404).json({ message: 'Staff member not found' });
     }
 
+    // Upload receipt to S3
+    const uploaded = await uploadFile(req.file.buffer, req.file.originalname, 'payments', req.file.mimetype);
+
     const payment = new Payment({
       staffMember: staffMemberId,
       amount: parseFloat(amount),
       paymentDate: new Date(paymentDate),
       description: description || '',
-      receiptFilename: req.file.filename,
-      receiptPath: req.file.path,
+      receiptFilename: uploaded.key,
+      receiptPath: uploaded.url,
       uploadedBy: req.user._id
     });
 
@@ -165,6 +139,12 @@ router.get('/:id/download', auth, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    // If receiptPath is an S3 URL, redirect to it
+    if (payment.receiptPath && typeof payment.receiptPath === 'string' && payment.receiptPath.startsWith('http')) {
+      return res.redirect(payment.receiptPath);
+    }
+
+    // Fallback to local filesystem path
     if (!fs.existsSync(payment.receiptPath)) {
       return res.status(404).json({ message: 'Receipt file not found on server' });
     }
